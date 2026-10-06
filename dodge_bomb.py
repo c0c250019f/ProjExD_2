@@ -50,22 +50,36 @@ def gameover(screen: pg.Surface) -> None:
     time.sleep(5)
 
 
-# def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
-#     """
-#     引数：なし
-#     戻り値：ばくだん画像リスト，ばくだんの半径リスト
-#     ばくだんの画像を作成し，リストに格納して返す
-#     """
-#     bb_imgs = []
-#     bb_rads = []
-#     for r in range(1, 11): 
-#         bb_img = pg.Surface((20*r, 20*r)) 
-#         pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r) 
-#         bb_imgs.append(bb_img)
-#         bb_accs = [a for a in range(1, 11)]
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    引数：なし
+    戻り値：爆弾の大きさ、爆弾の速度のリストをまとめたタプル
+    爆弾のサイズと速度を変更して返す
+    """
+    bb_imgs = []
+    bb_rads = []
+    for r in range(1, 11): 
+        bb_img = pg.Surface((20*r, 20*r)) 
+        pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r) 
+        bb_img.set_colorkey((0,0,0))
+        bb_imgs.append(bb_img)
+        bb_accs = [a for a in range(1, 11)]
+    return bb_imgs, bb_accs
     
 
-
+def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    kk_dict = { 
+        ( 0, 0): pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9),
+        (+5, 0): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), 0, 0.9),
+        (+5,-5): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), 45, 0.9), 
+        ( 0,-5): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), 90, 0.9),
+        (-5,-5): pg.transform.rotozoom(pg.image.load("fig/3.png"), -45, 0.9), 
+        (-5, 0): pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9), 
+        (-5,+5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 45, 0.9),
+        ( 0,+5): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), -90, 0.9),
+        (+5,+5): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), -45, 0.9),
+        }
+    return kk_dict
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -79,9 +93,11 @@ def main():
     bb_rct = bb_img.get_rect()
     bb_rct.center = random.randint(0,WIDTH), random.randint(0, HEIGHT)
     bb_img.set_colorkey((0,0,0))
-    vx, vy = +5, +5 
-    clock = pg.time.Clock()
+    bb_imgs, bb_accs = init_bb_imgs()
+    vx, vy = +5, +5
     tmr = 0
+    clock = pg.time.Clock()
+    kk_imgs = get_kk_imgs()
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
@@ -95,10 +111,17 @@ def main():
                 sum_mv[0] += tpl[0]
                 sum_mv[1] += tpl[1]
 
+        kk_img = kk_imgs[tuple(sum_mv)]
+
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
-        bb_rct.move_ip(vx,vy)
+        avx = vx*bb_accs[min(tmr//500, 9)] 
+        avy = vy*bb_accs[min(tmr//500, 9)]
+        bb_img = bb_imgs[min(tmr//500, 9)]
+        bb_rct.move_ip(avx, avy)
+        bb_rct.width = bb_img.get_rect().width
+        bb_rct.height = bb_img.get_rect().height
         yoko, tate = check_bound(bb_rct)
         if not yoko:
             vx *= -1
