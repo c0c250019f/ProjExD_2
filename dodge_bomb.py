@@ -8,6 +8,7 @@ import pygame as pg
 WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+
 DELTA = {
     pg.K_UP: (0, -5),
     pg.K_DOWN: (0, 5),
@@ -20,7 +21,7 @@ def check_bound(rect:pg.Rect) -> tuple[bool, bool]:
     """
     引数：こうかとんRectかばくだんRect
     戻り値：タプル（横方向判定結果，縦方向判定結果）
-    画面内ならTrue，画面外ならFalse
+    画面内ならTrue,画面外ならFalse
     """
     yoko, tate = True, True
     if rect.left < 0 or rect.right > WIDTH:
@@ -86,6 +87,7 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
         (+5,+5): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), -45, 0.9),
         }
     return kk_dict
+
 
 def calc_orientation(org: pg.Rect, dst: pg.Rect,
                      current_xy: tuple[float, float]) -> tuple[float, float]:
