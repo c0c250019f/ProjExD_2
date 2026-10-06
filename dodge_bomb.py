@@ -68,6 +68,12 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     
 
 def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
+    """
+    引数：なし
+    戻り値：移動量タプルと対応する画像Surfaceの辞書
+    移動量に応じて向きと角度を変更した画像を返す
+    """
+
     kk_dict = { 
         ( 0, 0): pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9),
         (+5, 0): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), 0, 0.9),
@@ -80,6 +86,24 @@ def get_kk_imgs() -> dict[tuple[int, int], pg.Surface]:
         (+5,+5): pg.transform.rotozoom(pg.transform.flip(pg.image.load("fig/3.png"),True, False), -45, 0.9),
         }
     return kk_dict
+
+def calc_orientation(org: pg.Rect, dst: pg.Rect,
+                     current_xy: tuple[float, float]) -> tuple[float, float]:
+    """
+    引数：爆弾のRectとこうかとんのRectと現在の移動方向
+    戻り値：爆弾の移動方向
+    orgからdstへの差ベクトルを求め、ベクトルの長さが√50になるように正規化する。距離が300未満なら現在の移動方向をそのまま返す。
+    """
+    dx = dst.centerx - org.centerx
+    dy = dst.centery - org.centery
+    norm = (dx**2 + dy**2) ** 0.5
+    if norm < 300:
+        return current_xy
+    target_norm = 50 ** 0.5
+    vx = dx / norm * target_norm
+    vy = dy / norm * target_norm
+    return vx, vy
+   
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -116,6 +140,7 @@ def main():
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True):
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])
+        vx, vy = calc_orientation(bb_rct, kk_rct, (vx, vy))
         avx = vx*bb_accs[min(tmr//500, 9)] 
         avy = vy*bb_accs[min(tmr//500, 9)]
         bb_img = bb_imgs[min(tmr//500, 9)]
