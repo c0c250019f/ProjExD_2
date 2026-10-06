@@ -1,3 +1,4 @@
+import time
 import random
 import os
 import sys
@@ -27,6 +28,43 @@ def check_bound(rect:pg.Rect) -> tuple[bool, bool]:
     if rect.top < 0 or rect.bottom > HEIGHT:
         tate = False
     return yoko, tate
+
+
+def gameover(screen: pg.Surface) -> None:
+    """
+    引数：からのSurface
+    戻り値：なし
+    画面をブラックアウトしてGame Overの文字列を5秒表示
+    """
+    go_img = pg.Surface((WIDTH, HEIGHT))
+    go_img.set_alpha(200)
+    fonto = pg.font.Font(None, 80)
+    text = fonto.render("Game Over", True, (255, 255, 255))
+    k8_ing = pg.image.load("fig/8.png")
+    screen_center = WIDTH / 2, HEIGHT / 2
+    go_img.blit(text, (text.get_rect(center=screen_center)))
+    go_img.blit(k8_ing, (310, 290))
+    go_img.blit(k8_ing, (760, 290))
+    screen.blit(go_img, (0, 0))
+    pg.display.update()
+    time.sleep(5)
+
+
+# def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+#     """
+#     引数：なし
+#     戻り値：ばくだん画像リスト，ばくだんの半径リスト
+#     ばくだんの画像を作成し，リストに格納して返す
+#     """
+#     bb_imgs = []
+#     bb_rads = []
+#     for r in range(1, 11): 
+#         bb_img = pg.Surface((20*r, 20*r)) 
+#         pg.draw.circle(bb_img, (255, 0, 0), (10*r, 10*r), 10*r) 
+#         bb_imgs.append(bb_img)
+#         bb_accs = [a for a in range(1, 11)]
+    
+
 
 
 def main():
@@ -73,6 +111,7 @@ def main():
         clock.tick(50)
         if kk_rct.colliderect(bb_rct):
             print("game over")
+            gameover(screen)
             return
 
 
